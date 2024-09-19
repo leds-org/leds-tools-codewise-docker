@@ -10,12 +10,5 @@ COPY . /app
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Make port 80 available to the world outside this container
-EXPOSE 80
-
-# Define environment variable
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-
 # Run the python script when the container launches
-CMD ["python", "app.py"]
+CMD ["python", "application.py"]
