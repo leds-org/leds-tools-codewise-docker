@@ -11,6 +11,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write  # Required permission to push the Docker image
     
     steps:
     - name: Checkout repository
