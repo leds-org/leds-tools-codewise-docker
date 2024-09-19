@@ -50,8 +50,7 @@ jobs:
             -e OPENAI_API_KEY=$OPENAI_API_KEY \
             -e OPENAI_ENGINE=$OPENAI_ENGINE \
             -e DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL \
-            -v $(pwd)/combined_code.txt:/app/combined_code.txt \
-            ghcr.io/${{ github.repository }}/code-review-container:latest combined_code.txt python
+             -v $(pwd)/your_code:/app/code-review-discord code-review-discord python application.py combined_code.txt python
 
   build:
     runs-on: ubuntu-latest
