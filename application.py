@@ -6,8 +6,6 @@ from dotenv import load_dotenv
 load_dotenv()
 from pprint import pprint
 
-## documentando a funcao
-
 def suggest_improvements(code: str, language: str) -> str:
 
     prompt = f"Review the following {language} code and suggest improvements until 150 characteris with markdown :\n\n{code}"

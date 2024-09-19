@@ -49,9 +49,6 @@ jobs:
           # Output the combined code file as an artifact
           echo "::set-output name=code_file::combined_code.txt"
       
-      - name: List directory contents
-        run: ls -la
-      
       - name: Log in to GitHub Packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -65,15 +62,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_ENGINE: ${{ secrets.OPENAI_ENGINE }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        run: |
-          # Check if combined_code.txt exists and is a file
-          if [ -f combined_code.txt ]; then
-            echo "combined_code.txt exists and is a file."
-          else
-            echo "combined_code.txt does not exist or is not a file."
-            exit 1
-          fi
-
+        run: |          
           docker run \
             --env OPENAI_API_KEY=$OPENAI_API_KEY \
             --env OPENAI_ENGINE=$OPENAI_ENGINE \
