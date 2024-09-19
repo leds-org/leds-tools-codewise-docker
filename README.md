@@ -41,6 +41,80 @@ Run the script from the command line, passing the path to the code file and the 
 python application.py path/to/your/code_file.py python
 ```
 
+## Usage on Gitlab Actions
+
+```bash
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    needs: build 
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get committed code
+        id: get_code
+        run: |
+          # Get the latest commit hash
+          COMMIT_HASH=$(git rev-parse HEAD)
+          
+          # Extract the code changes
+          git diff-tree --no-commit-id --name-only -r $COMMIT_HASH > files.txt
+          
+          # Check if files.txt is empty
+          if [ ! -s files.txt ]; then
+            echo "No files changed."
+            exit 0
+          fi
+          
+          # Concatenate the content of all changed files into one file
+          for file in $(cat files.txt); do
+            echo "Processing $file"
+            # Ensure the file exists before trying to read it
+            if [ -f "$file" ]; then
+              echo "=== File: $file ===" >> combined_code.txt
+              cat "$file" >> combined_code.txt
+              echo "" >> combined_code.txt
+            else
+              echo "File $file does not exist."
+            fi
+          done
+          
+          # Check if combined_code.txt was created successfully
+          if [ -f combined_code.txt ]; then
+            echo "combined_code.txt created successfully."
+          else
+            echo "Failed to create combined_code.txt."
+            exit 1
+          fi
+          
+          # Output the combined code file as an artifact
+          echo "::set-output name=code_file::combined_code.txt"
+      
+      
+      - name: Log in to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo $GITHUB_TOKEN | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+  
+      - name: Pull Docker image
+        run: docker pull ghcr.io/leds-org/leds-tools-codewise:latest  
+
+      - name: Run Docker container
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_ENGINE: ${{ secrets.OPENAI_ENGINE }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |          
+          docker run \
+            --env OPENAI_API_KEY=$OPENAI_API_KEY \
+            --env OPENAI_ENGINE=$OPENAI_ENGINE \
+            --env DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL \
+            -v $(pwd)/combined_code.txt:/app/combined_code.txt:ro \
+            ghcr.io/leds-org/leds-tools-codewise:latest python /app/application.py /app/combined_code.txt python
+
+```
+
 ## Parameters
 
 * path/to/your/code_file.py: Path to the file containing the code you want to review.
@@ -69,3 +143,4 @@ docker run --env-file .env -v $(pwd)/path/to/code:/app/code-review-discord code-
 
 * Replace path/to/code with the directory containing your code file.
 * Replace code_file.py with the name of your code file.
+
