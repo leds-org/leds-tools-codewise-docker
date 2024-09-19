@@ -31,11 +31,17 @@ jobs:
             exit 0
           fi
           
-          # Concatenate all changed files into one file
+          # Concatenate the content of all changed files into one file
           for file in $(cat files.txt); do
             echo "Processing $file"
-            cat "$file" >> combined_code.txt
-            echo "" >> combined_code.txt
+            # Ensure the file exists before trying to read it
+            if [ -f "$file" ]; then
+              echo "=== File: $file ===" >> combined_code.txt
+              cat "$file" >> combined_code.txt
+              echo "" >> combined_code.txt
+            else
+              echo "File $file does not exist."
+            fi
           done
           
           # Check if combined_code.txt was created successfully
@@ -48,6 +54,7 @@ jobs:
           
           # Output the combined code file as an artifact
           echo "::set-output name=code_file::combined_code.txt"
+      
       
       - name: Log in to GitHub Packages
         env:
