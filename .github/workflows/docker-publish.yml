@@ -51,10 +51,11 @@ jobs:
             -e OPENAI_ENGINE=$OPENAI_ENGINE \
             -e DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL \
             -v $(pwd)/combined_code.txt:/app/combined_code.txt \
-            ghcr.io/YOUR_GITHUB_USERNAME/code-review-container:latest combined_code.txt python
+            ghcr.io/${{ github.repository }}/code-review-container:latest combined_code.txt python
 
   build:
     runs-on: ubuntu-latest
+    needs: review 
     permissions:
       contents: write
       packages: write  # Required permission to push the Docker image
