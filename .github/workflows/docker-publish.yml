@@ -49,12 +49,20 @@ jobs:
           OPENAI_ENGINE: ${{ secrets.OPENAI_ENGINE }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
+          # Check if combined_code.txt exists and is a file
+          if [ -f combined_code.txt ]; then
+            echo "combined_code.txt exists and is a file."
+          else
+            echo "combined_code.txt does not exist or is not a file."
+            exit 1
+          fi
+
           docker run \
             --env OPENAI_API_KEY=$OPENAI_API_KEY \
             --env OPENAI_ENGINE=$OPENAI_ENGINE \
             --env DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL \
-            -v $(pwd)/combined_code.txt:/app/combined_code.txt \
-            ghcr.io/leds-org/leds-tools-codewise:latest python application.py combined_code.txt python
+            -v $(pwd)/combined_code.txt:/app/combined_code.txt:ro \
+            ghcr.io/leds-org/leds-tools-codewise:latest python /app/application.py /app/combined_code.txt python
 
   build:
     runs-on: ubuntu-latest
