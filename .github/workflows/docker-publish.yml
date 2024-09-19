@@ -9,6 +9,50 @@ on:
       - main
 
 jobs:
+  review:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get committed code
+        id: get_code
+        run: |
+          # Get the latest commit hash
+          COMMIT_HASH=$(git rev-parse HEAD)
+          
+          # Extract the code changes
+          git diff-tree --no-commit-id --name-only -r $COMMIT_HASH > files.txt
+          
+          # Concatenate all changed files into one file
+          for file in $(cat files.txt); do
+            echo "Processing $file"
+            cat "$file" >> combined_code.txt
+            echo "" >> combined_code.txt
+          done
+          
+          # Output the combined code file as an artifact
+          echo "::set-output name=code_file::combined_code.txt"
+
+      - name: Log in to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo $GITHUB_TOKEN | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Run Docker container from GitHub Packages
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_ENGINE: ${{ secrets.OPENAI_ENGINE }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          docker run \
+            -e OPENAI_API_KEY=$OPENAI_API_KEY \
+            -e OPENAI_ENGINE=$OPENAI_ENGINE \
+            -e DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL \
+            -v $(pwd)/combined_code.txt:/app/combined_code.txt \
+            ghcr.io/YOUR_GITHUB_USERNAME/code-review-container:latest combined_code.txt python
+
   build:
     runs-on: ubuntu-latest
     permissions:
@@ -38,3 +82,6 @@ jobs:
 
     - name: Image digest
       run: echo ${{ steps.docker_build.outputs.digest }}
+
+
+  
