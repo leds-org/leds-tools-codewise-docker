@@ -1,4 +1,4 @@
-# Code Review and Discord Notifier
+# Code Wise: Code Review and Discord Notifier
 
 This Python script reviews code snippets using OpenAI's GPT model and sends improvement suggestions to a Discord channel.
 
