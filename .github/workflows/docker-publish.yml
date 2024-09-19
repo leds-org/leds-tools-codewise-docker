@@ -25,6 +25,12 @@ jobs:
           # Extract the code changes
           git diff-tree --no-commit-id --name-only -r $COMMIT_HASH > files.txt
           
+          # Check if files.txt is empty
+          if [ ! -s files.txt ]; then
+            echo "No files changed."
+            exit 0
+          fi
+          
           # Concatenate all changed files into one file
           for file in $(cat files.txt); do
             echo "Processing $file"
@@ -32,9 +38,20 @@ jobs:
             echo "" >> combined_code.txt
           done
           
+          # Check if combined_code.txt was created successfully
+          if [ -f combined_code.txt ]; then
+            echo "combined_code.txt created successfully."
+          else
+            echo "Failed to create combined_code.txt."
+            exit 1
+          fi
+          
           # Output the combined code file as an artifact
           echo "::set-output name=code_file::combined_code.txt"
-
+      
+      - name: List directory contents
+        run: ls -la
+      
       - name: Log in to GitHub Packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
