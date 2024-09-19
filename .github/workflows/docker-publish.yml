@@ -39,18 +39,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: echo $GITHUB_TOKEN | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+  
+      - name: Pull Docker image
+        run: docker pull ghcr.io/leds-org/leds-tools-codewise:latest  
 
-      - name: Run Docker container from GitHub Packages
+      - name: Run Docker container
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_ENGINE: ${{ secrets.OPENAI_ENGINE }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
           docker run \
-            -e OPENAI_API_KEY=$OPENAI_API_KEY \
-            -e OPENAI_ENGINE=$OPENAI_ENGINE \
-            -e DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL \
-             -v $(pwd)/your_code:/app/code-review-discord code-review-discord python application.py combined_code.txt python
+            --env OPENAI_API_KEY=$OPENAI_API_KEY \
+            --env OPENAI_ENGINE=$OPENAI_ENGINE \
+            --env DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL \
+            -v $(pwd)/combined_code.txt:/app/combined_code.txt \
+            ghcr.io/leds-org/leds-tools-codewise:latest python application.py combined_code.txt python
 
   build:
     runs-on: ubuntu-latest
